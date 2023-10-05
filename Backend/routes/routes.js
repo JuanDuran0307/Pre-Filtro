@@ -81,6 +81,25 @@ router.put('/update/:id', async (req, res) => {
       client.close();
     }
   });
+
+  router.post('/login', async (req, res) => {
+
+    const client = new MongoClient(process.env.DDBB23);
+  
+    const db = client.db('shopJQ');
+    const usuarios = db.collection('usuarios');
+    const { email, password } = req.body;
+  
+    const usuario = await usuarios.findOne({ email, password });
+  
+    if (usuario) {
+      // Las credenciales son válidas, puedes devolver una respuesta de éxito
+      res.json({ message: 'Autenticación exitosa' });
+    } else {
+      // Las credenciales no son válidas, puedes devolver un mensaje de error
+      res.status(401).json({ error: 'Credenciales incorrectas' });
+    }
+  });
   
 
 module.exports = router;
