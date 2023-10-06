@@ -29,7 +29,7 @@ router.post("/post", async (req, res) => {
 
 });
 
-router.delete('/del/:id',async(req,res)=>{
+router.delete('/delProductos/:id',async(req,res)=>{
     try {
         const client = new MongoClient(process.env.DDBB23)
         await client.connect();

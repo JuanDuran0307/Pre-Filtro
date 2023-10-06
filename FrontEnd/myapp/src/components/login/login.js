@@ -32,7 +32,7 @@ const Login = ({db}) => {
     try {
       const response = await axios.post('http://localhost:3763/shop/login', { email, password })
       .then(()=>{
-        history.push('/home');
+        history.push('/productos');
       })
       console.log(response);
    

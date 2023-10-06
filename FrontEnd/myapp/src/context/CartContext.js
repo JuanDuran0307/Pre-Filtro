@@ -14,8 +14,8 @@ export const CartProvider = ({ children }) => {
     await axios
       .get("http://localhost:3763/shop/get-productos")
       .then((response) => {
-        console.log(response.data);
-        setProducts(response.data)
+      console.log(response.data.result);
+      setProducts(response.data.result)
       }); 
       
   };
@@ -24,8 +24,8 @@ export const CartProvider = ({ children }) => {
     return await axios
       .get("http://localhost:3763/shop/get-productos-carrito")
       .then((response) => {
-        console.log(response.data);
-        setCartItems(response.data)
+        console.log(response.data.result);
+        setCartItems(response.data.result)
       }); 
       
       
@@ -42,18 +42,51 @@ export const CartProvider = ({ children }) => {
 
     await axios.post("http://localhost:3763/shop/add-productos-carrito", {nombre, imagen, precio });
 
-    getProducts();
-    getProductsCart();
-  };
+    const updatedProducts = products.map((p) =>
+    p.nombre === nombre ? { ...p, inCart: true } : p
+  );
 
-  const editItemToCart = async (id, query,stock) => {
+  // Actualiza el estado local de products
+  setProducts(updatedProducts);
+
+  getProducts();
+  getProductsCart();
+};
+
+// Similarmente, actualiza la propiedad inCart a false cuando elimines un artículo del carrito
+const removeItemFromCart = async (_id) => {
+  await axios
+    .delete(`http://localhost:3763/shop/delProductos/${_id}`)
+    .then(({ data }) => console.log(data));
+
+  // Actualiza la propiedad inCart del producto a false en el estado products
+  const updatedProducts = products.map((p) =>
+    p._id === _id ? { ...p, inCart: false } : p
+  );
+
+  // Actualiza el estado local de products
+  setProducts(updatedProducts);
+
+  getProducts();
+  getProductsCart();
+};
+
+
+
+
+  
+
+
+
+
+  const editItemToCart = async (_id, query,stock) => {
     if (query === "del" && stock === 1) {
       await axios
-        .delete(`http://localhost:3763/shop/delProductos/${id}`)
+        .delete(`http://localhost:3763/shop/delProductos/${_id}`)
         .then(({ data }) => console.log(data));
     } else {
       await axios
-        .put(`http://localhost:3763/shop/updateProductoCarrito/${id}?query=${query}`, {
+        .put(`http://localhost:3763/shop/updateProductoCarrito/${_id}?query=${query}`, {
          stock,
         })
         .then(({ data }) => console.log(data));
@@ -66,7 +99,7 @@ export const CartProvider = ({ children }) => {
   return (
     /* Envolvemos el children con el provider y le pasamos un objeto con las propiedades que necesitamos por value */
     <CartContext.Provider
-      value={{ cartItems, products, addItemToCart, editItemToCart }}
+      value={{ cartItems, products, addItemToCart, editItemToCart,removeItemFromCart}}
     >
       {children}
     </CartContext.Provider>

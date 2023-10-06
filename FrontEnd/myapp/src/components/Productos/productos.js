@@ -1,13 +1,21 @@
 import React, { useContext } from "react";
 import CartContext from "../../context/CartContext";
 import styles from "./styles.module.scss";
+import Navbar from "../NavBar/NavBar";
 
 const Products = () => {
   /* Traemos del context la funcion para agregar un producto */
-  const { addItemToCart, products } = useContext(CartContext);
+  const { addItemToCart, products, removeItemFromCart} = useContext(CartContext);
 
   return (
+<div>
+  <div>
+    <Navbar/>
+  </div>
+
+
     <div className={styles.productsContainer}>
+
       {products &&
         products.map((product, i) => (
           <div key={i} className={styles.product}>
@@ -18,15 +26,21 @@ const Products = () => {
               </p>
             </div>
             {!product.inCart ? (
-              <button onClick={() => addItemToCart(product)}>
+              <button className={styles.buttonanimated} onClick={() => addItemToCart(product)}>
                 Add to Cart
               </button>
             ) : (
-              <button>En el carrito</button>
+              <button
+            className={styles.buttonanimated}
+            onClick={() => removeItemFromCart(product._id)} // Utiliza removeItemFromCart con el _id del producto
+          >
+            Remove from Cart
+          </button>
             )}
           </div>
         ))}
     </div>
+</div>
   );
 };
 

@@ -8,6 +8,7 @@ export const ItemCart = ({ item }) => {
 
   /* Desestructuramos el item para sacar solo la id */
   const { stock } = item;
+  console.log(stock);
 
   return (
     <div className={styles.cartItem}>
@@ -20,7 +21,7 @@ export const ItemCart = ({ item }) => {
               AGREGAR
             </button>
             <button onClick={() => editItemToCart(item._id, "del", stock  )}>
-              SACAR
+              ELIMINAR
             </button>
           </div>
         </div>
