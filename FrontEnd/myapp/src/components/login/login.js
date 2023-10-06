@@ -33,11 +33,11 @@ const Login = ({db}) => {
       const response = await axios.post('http://localhost:3763/shop/login', { email, password })
       .then(()=>{
         history.push('/productos');
+        console.log(response);
       })
-      console.log(response);
    
     } catch (error) {
-      console.error(error, "xdxdxdxd"); // Credenciales incorrectas
+      console.error(error, "402"); // Credenciales incorrectas
     } 
   };
   

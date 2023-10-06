@@ -53,40 +53,25 @@ export const CartProvider = ({ children }) => {
   getProductsCart();
 };
 
-// Similarmente, actualiza la propiedad inCart a false cuando elimines un artículo del carrito
-const removeItemFromCart = async (_id) => {
-  await axios
-    .delete(`http://localhost:3763/shop/delProductos/${_id}`)
-    .then(({ data }) => console.log(data));
-
-  // Actualiza la propiedad inCart del producto a false en el estado products
-  const updatedProducts = products.map((p) =>
-    p._id === _id ? { ...p, inCart: false } : p
-  );
-
-  // Actualiza el estado local de products
-  setProducts(updatedProducts);
-
-  getProducts();
-  getProductsCart();
-};
-
-
-
 
   
 
 
 
 
-  const editItemToCart = async (_id, query,stock) => {
+const editItemToCart = async (id, query,stock) => {
     if (query === "del" && stock === 1) {
       await axios
-        .delete(`http://localhost:3763/shop/delProductos/${_id}`)
+        .delete(`http://localhost:3763/shop/delProductos/${id}`)
         .then(({ data }) => console.log(data));
+        const updatedProducts = products.map((p) =>
+        p._id === id ? { ...p, inCart: false } : p
+  );
+    // Actualiza el estado local de products
+    setProducts(updatedProducts);
     } else {
       await axios
-        .put(`http://localhost:3763/shop/updateProductoCarrito/${_id}?query=${query}`, {
+        .put(`http://localhost:3763/shop/updateProductoCarrito/${id}?query=${query}`, {
          stock,
         })
         .then(({ data }) => console.log(data));
@@ -99,7 +84,7 @@ const removeItemFromCart = async (_id) => {
   return (
     /* Envolvemos el children con el provider y le pasamos un objeto con las propiedades que necesitamos por value */
     <CartContext.Provider
-      value={{ cartItems, products, addItemToCart, editItemToCart,removeItemFromCart}}
+      value={{ cartItems, products, addItemToCart, editItemToCart}}
     >
       {children}
     </CartContext.Provider>

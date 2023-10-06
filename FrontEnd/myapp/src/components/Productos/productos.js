@@ -5,7 +5,7 @@ import Navbar from "../NavBar/NavBar";
 
 const Products = () => {
   /* Traemos del context la funcion para agregar un producto */
-  const { addItemToCart, products, removeItemFromCart} = useContext(CartContext);
+  const { addItemToCart, products} = useContext(CartContext);
 
   return (
 <div>
@@ -29,13 +29,8 @@ const Products = () => {
               <button className={styles.buttonanimated} onClick={() => addItemToCart(product)}>
                 Add to Cart
               </button>
-            ) : (
-              <button
-            className={styles.buttonanimated}
-            onClick={() => removeItemFromCart(product._id)} // Utiliza removeItemFromCart con el _id del producto
-          >
-            Remove from Cart
-          </button>
+            ) :  (
+              <button className={styles.buttonanimated}>En el carrito</button>
             )}
           </div>
         ))}

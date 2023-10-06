@@ -1,6 +1,6 @@
 import {Link} from 'react-router-dom'
 
-import ThemeContext from '../../context/ThemContext'
+import ThemeContext from '../../context/CartContext'
 
 import styles from './styles.module.scss'
 
