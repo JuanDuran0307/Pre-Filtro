@@ -1,18 +1,18 @@
-
 import './App.css';
-import dashboard from './components/dashboard';
-import Login from './components/login'
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import React from 'react';
+import Home from './components/Home/home';
+//import Login from './components/login/login'
+
+import { CartProvider } from './context/CartContext';
 
 function App() {
   return (
-    <div className="App">
-      <Login>
-      </Login>
-      <Router>
-      <Route exact path="/dashboard" component={dashboard} />
-    </Router>
-    </div>
+
+    <CartProvider>
+      <Home />
+    </CartProvider>
+
+    
     
   );
 }

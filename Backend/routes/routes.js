@@ -100,6 +100,137 @@ router.put('/update/:id', async (req, res) => {
       res.status(401).json({ error: 'Credenciales incorrectas' });
     }
   });
+
+
+
+
+
+
+
+
+
+
+  router.get('/get-productos', async(req, res) =>{
+   
+    const client = new MongoClient(process.env.DDBB23);
+    const db = client.db('shopJQ');
+    const productos = db.collection('productos');
+    const result = await productos.find().toArray();
+
+  if (result) {
+    res.json({ result });
+  } else {
+    res.json({ mensaje: "No hay productos" });
+  }
+
+  });
+  router.get('/get-productos-carrito', async(req, res) =>{
+   
+    const client = new MongoClient(process.env.DDBB23);
+    const db = client.db('shopJQ');
+    const productos = db.collection('carrito');
+    const result = await productos.find().toArray();
+
+  if (result) {
+    res.json({ result });
+  } else {
+    res.json({ mensaje: "No hay productos" });
+  }
+
+  });
+  //Este endpoint es para agregar productos al carrito
+  router.post('/add-productos-carrito', async(req, res) =>{
+
+    try {
+      const client = new MongoClient(process.env.DDBB23);
+      const db = client.db('shopJQ');
+      const productos = db.collection('productos');
+      const carro = db.collection('carrito');
+      const { nombre, imagen, precio } = req.body;
+      // Verificar si el producto ya está en el carrito
+      const estaEnElCarrito = await carro.findOne({ nombre });
+
+      if (estaEnElCarrito) {
+        return res.status(400).json({
+          mensaje: 'El producto ya está en el carrito',
+        });
+      }
+
+      // Agregar el producto al carrito
+      const newProductInCart = await carro.insertOne({
+        nombre,
+        imagen,
+        precio,
+        stock: 1,
+      });
+
+      return res.status(200).json({
+        mensaje: 'El producto fue agregado al carrito',
+        product: newProductInCart.ops[0], // Devolvemos el producto insertado
+      });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        mensaje: 'Se produjo un error al procesar la solicitud',
+      });
+    }
+  })
+
+  
+router.delete('/delProductos/:id',async(req,res)=>{
+  try {
+      const client = new MongoClient(process.env.DDBB23)
+      await client.connect();
+      const db =  client.db(`shopJQ`);
+      const collection =  db.collection("carrito");
+      const productId = req.params.id;
+      const existingUser = await collection.findOne ({ _id: new ObjectId(productId) });
+      if (!existingUser) {
+      return res.status(404).json({ error: 'Articulo no encontrado' });
+      }
+
+      // Eliminar el producto
+      await collection.deleteOne({ _id: new ObjectId(productId) });
+          res.json("Borrado con exito")
+      } catch (error) {
+          console.log(error);
+      }
+})
+router.put('/updateProductoCarrito/:id', async (req, res) => {
+  const client = new MongoClient(process.env.DDBB23);
+
+  try {
+    await client.connect();
+    const db = client.db('shopJQ');
+    const collection = db.collection('carrito');
+
+    // Obtener el ID del producto a actualizar desde los parámetros de la URL
+    const productId = req.params.id;
+
+    // Verificar si el producto con el ID dado existe
+    const existingUser = await collection.findOne({ _id: new ObjectId(productId) });
+
+    if (!existingUser) {
+      return res.status(404).json({ error: 'producto no encontrado' });
+    }
+
+    // Obtener los datos actualizados del producto del cuerpo de la solicitud
+    const updatedUserData = req.body;
+
+    // Realizar la actualización del producto en la base de datos
+    await collection.updateOne({ _id: new ObjectId(productId) }, { $set: updatedUserData });
+
+    res.json({ message: 'producto actualizado con éxito' });
+  } catch (error) {
+    console.error('Error al actualizar el producto:', error);
+    res.status(500).json({ error: 'Hubo un error al actualizar el producto' });
+  } finally {
+    client.close();
+  }
+});
+
+
+
   
 
 module.exports = router;

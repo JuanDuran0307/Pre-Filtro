@@ -1,8 +1,9 @@
 
-import '../styles/login.css';
+
 import React, { useState} from 'react';
 import axios from 'axios';
 import { useHistory } from 'react-router-dom'; 
+import styles from "./styles.module.scss";
 
 
 
@@ -29,10 +30,12 @@ const Login = ({db}) => {
   }; */
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://localhost:3763/shop/login', { email, password });
-      console.log(response); // Autenticación exitosa
-      // Puedes redirigir al usuario a la página de inicio después de la autenticación.
-      history.push('/dashboard');
+      const response = await axios.post('http://localhost:3763/shop/login', { email, password })
+      .then(()=>{
+        history.push('/home');
+      })
+      console.log(response);
+   
     } catch (error) {
       console.error(error, "xdxdxdxd"); // Credenciales incorrectas
     } 
@@ -40,10 +43,10 @@ const Login = ({db}) => {
   
 
   return (
-    <div className="login-container">
+    <div className={styles.logincontainer}>
       <h1>Login</h1>
       <form>
-        <div className="form-group">
+        <div className={styles.formgroup}>
           <label htmlFor="email">Email:</label>
           <input
             type="text"
@@ -52,7 +55,7 @@ const Login = ({db}) => {
             onChange={handleUsernameChange}
           />
         </div>
-        <div className="form-group">
+        <div className={styles.formgroup}>
           <label htmlFor="password">Password:</label>
           <input
             type="password"
