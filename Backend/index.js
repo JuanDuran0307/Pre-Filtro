@@ -8,11 +8,11 @@ const app = express();
 app.use(cors());
 
 
-const port = process.env.PORT;
+
 app.use(express.json());
 app.use('/shop', routerMain)
 
-
+const port = process.env.PORT;
 const database = async ()=>{
     const url = process.env.DDBB23;
     const db = new MongoClient(url);

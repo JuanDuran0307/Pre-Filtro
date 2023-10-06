@@ -15,7 +15,6 @@ const Products = () => {
             <div>
               <p>
                 {product.nombre} - ${product.precio}
-           
               </p>
             </div>
             {!product.inCart ? (

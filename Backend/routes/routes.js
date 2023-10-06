@@ -139,42 +139,60 @@ router.put('/update/:id', async (req, res) => {
 
   });
   //Este endpoint es para agregar productos al carrito
-  router.post('/add-productos-carrito', async(req, res) =>{
+router.post('/add-productos-carrito', async (req, res) => {
+  const client = new MongoClient(process.env.DDBB23);
+  const db = client.db('shopJQ');
+  const productos = db.collection('productos');
+  const carro = db.collection('carrito');
+  const { nombre, imagen, precio } = req.body;
 
-    try {
-      const client = new MongoClient(process.env.DDBB23);
-      const db = client.db('shopJQ');
-      const productos = db.collection('productos');
-      const carro = db.collection('carrito');
-      const { nombre, imagen, precio } = req.body;
-      // Verificar si el producto ya está en el carrito
-      const estaEnElCarrito = await carro.findOne({ nombre });
+  // Verificar si el producto ya está en el carrito
+  const estaEnProducts = await productos.findOne({ nombre });
 
-      if (estaEnElCarrito) {
-        return res.status(400).json({
-          mensaje: 'El producto ya está en el carrito',
-        });
-      }
+  /* Nos fijamos si todos los campos vienen con info */
+  const noEstaVacio = nombre !== "" && imagen !== "" && precio !== "";
 
-      // Agregar el producto al carrito
-      const newProductInCart = await carro.insertOne({
-        nombre,
-        imagen,
-        precio,
-        stock: 1,
-      });
+  /* Nos fijamos si el producto ya esta en el carrito */
+  const estaEnElCarrito = await carro.findOne({ nombre });
 
-      return res.status(200).json({
-        mensaje: 'El producto fue agregado al carrito',
-        product: newProductInCart.ops[0], // Devolvemos el producto insertado
-      });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({
-        mensaje: 'Se produjo un error al procesar la solicitud',
-      });
-    }
-  })
+  /* Si no tenemos el producto */
+  if (!estaEnProducts) {
+    res.status(400).json({
+      mensaje: "Este producto no se encuentra en nuestra base de datos",
+    });
+
+    /* Si nos envían algo y no está en el carrito, lo agregamos */
+  } else if (noEstaVacio && !estaEnElCarrito) {
+    const newProductInCart = {
+      nombre,
+      imagen,
+      precio,
+      stock: 1,
+    };
+
+    await carro.insertOne(newProductInCart).then(() => {
+      /* Y actualizamos la prop inCart: true en nuestros productos */
+      productos
+        .updateOne(
+          { _id: estaEnProducts._id },
+          { $set: { inCart: true } }
+        )
+        .then(() => {
+          res.json({
+            mensaje: `El producto fue agregado al carrito`,
+            product: newProductInCart,
+          });
+        })
+        .catch((error) => console.error(error));
+    });
+
+    /* Y si está en el carrito avisamos */
+  } else if (estaEnElCarrito) {
+    res.status(400).json({
+      mensaje: "El producto ya está en el carrito",
+    });
+  }
+});
 
   
 router.delete('/delProductos/:id',async(req,res)=>{

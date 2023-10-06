@@ -13,15 +13,24 @@ export const CartProvider = ({ children }) => {
   const getProducts = async () => {
     await axios
       .get("http://localhost:3763/shop/get-productos")
-      .then(({ data }) => setProducts(data.products));
+      .then((response) => {
+        console.log(response.data);
+        setProducts(response.data)
+      }); 
+      
   };
 
   const getProductsCart = async () => {
     return await axios
       .get("http://localhost:3763/shop/get-productos-carrito")
-      .then(({ data }) => setCartItems(data.productsCart))
-      .catch((error) => console.error(error));
+      .then((response) => {
+        console.log(response.data);
+        setCartItems(response.data)
+      }); 
+      
+      
   };
+
 
   useEffect(() => {
     getProducts();
