@@ -17,10 +17,10 @@ export const ItemCart = ({ item }) => {
         <div className={styles.left}>
           <p>{item.nombre}</p>
           <div className={styles.buttons}>
-            <button onClick={() => editItemToCart(item._id, "add", stock  )}>
+            <button onClick={() => editItemToCart(item._id,"add", stock  )}>
               AGREGAR
             </button>
-            <button onClick={() => editItemToCart(item._id, "del", stock  )}>
+            <button onClick={() => editItemToCart(item._id,"del", stock  )}>
               ELIMINAR
             </button>
           </div>

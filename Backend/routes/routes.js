@@ -3,7 +3,7 @@ const {MongoClient, ObjectId} = require('mongodb');
 
 const router = Router();
 
-router.get('/usuarios',async(req,res)=>{
+router.get('/getUsuarios',async(req,res)=>{
     const client = new MongoClient(process.env.DDBB23)
     await client.connect();
     const db =  client.db(`shopJQ`);
@@ -14,7 +14,7 @@ router.get('/usuarios',async(req,res)=>{
 
 })
 
-router.post("/post", async (req, res) => {
+router.post("/postUsuarios", async (req, res) => {
     try {
         const client = new MongoClient(process.env.DDBB23)
         await client.connect();
@@ -29,7 +29,7 @@ router.post("/post", async (req, res) => {
 
 });
 
-router.delete('/delProductos/:id',async(req,res)=>{
+router.delete('/delUsuarios/:id',async(req,res)=>{
     try {
         const client = new MongoClient(process.env.DDBB23)
         await client.connect();
@@ -49,7 +49,7 @@ router.delete('/delProductos/:id',async(req,res)=>{
         }
 })
 
-router.put('/update/:id', async (req, res) => {
+router.put('/updateUsuarios/:id', async (req, res) => {
     const client = new MongoClient(process.env.DDBB23);
   
     try {
@@ -100,7 +100,6 @@ router.put('/update/:id', async (req, res) => {
       res.status(401).json({ error: 'Credenciales incorrectas' });
     }
   });
-
 
 
 
@@ -200,50 +199,102 @@ router.delete('/delProductos/:id',async(req,res)=>{
       const client = new MongoClient(process.env.DDBB23)
       await client.connect();
       const db =  client.db(`shopJQ`);
-      const collection =  db.collection("carrito");
-      const productId = req.params.id;
-      const existingUser = await collection.findOne ({ _id: new ObjectId(productId) });
-      if (!existingUser) {
-      return res.status(404).json({ error: 'Articulo no encontrado' });
+      const carrito =  db.collection("carrito");
+      const productos = db.collection("productos")
+      const { id } = req.params;
+      console.log({_id:id});
+
+      /* Buscamos el producto en el carrito */
+      const productInCart = await carrito.findOne({_id:id});
+      console.log(productInCart);
+      if (!productInCart) {
+        return res.status(404).json({ mensaje: "El producto no se encontró en el carrito" });
       }
 
-      // Eliminar el producto
-      await collection.deleteOne({ _id: new ObjectId(productId) });
-          res.json("Borrado con exito")
+    
+      /* Buscamos el producto en nuestra DB por el nombre del que esta en el carrito */
+      const { nombre, imagen, precio, _id:productoId } = await productos.findOne({
+        nombre: productInCart.nombre,
+      });
+    
+      /* Buscamos y eliminamos el producto con la id */
+      await carrito.deleteOne({_id:id});
+      
+      /* Buscamos y editamos la prop inCart: false */
+      /* Le pasamos la id del producto en la DB */
+      /* La prop a cambiar y las demas */
+      /* Y el new para devolver el producto editado */
+      await productos.updateOne(
+        {_id:productoId},
+        {$set: { inCart: false, nombre, imagen, precio }},
+        { new: true }
+      )
+        .then((product) => {
+          res.json({
+            mensaje: `El producto ${product.nombre} fue eliminado del carrito`,
+          });
+        })
       } catch (error) {
           console.log(error);
       }
 })
 router.put('/updateProductoCarrito/:id', async (req, res) => {
-  const client = new MongoClient(process.env.DDBB23);
-
   try {
+    const client = new MongoClient(process.env.DDBB23);
     await client.connect();
-    const db = client.db('shopJQ');
-    const collection = db.collection('carrito');
+    const db = client.db(`shopJQ`);
+    const carrito = db.collection("carrito");
+    const { id } = req.params;
+    const { query } = req.query;
+    const body = req.body;
+    console.log(query);
+    console.log(body.stock);
 
-    // Obtener el ID del producto a actualizar desde los parámetros de la URL
-    const productId = req.params.id;
+    /* Buscamos el producto en el carrito */
+    const productBuscado = await carrito.find({ _id: id });
 
-    // Verificar si el producto con el ID dado existe
-    const existingUser = await collection.findOne({ _id: new ObjectId(productId) });
+    /* Si no hay query 'add' o 'del' */
+    if (!query) {
+      res.status(404).json({ mensaje: "Debes enviar una query" });
 
-    if (!existingUser) {
-      return res.status(404).json({ error: 'producto no encontrado' });
+      /* Si esta el producto en el carrito y quiero agregar */
+    } else if (productBuscado && query === "add") {
+      body.stock = body.stock + 1;
+
+      await carrito.updateOne(
+        { _id: id },
+        { $set: { stock: body.stock } }, // Usar el operador $set
+        { new: true }
+      ).then(() => {
+        res.json({
+          mensaje: `El producto: ${body.nombre} fue actualizado`,
+          product: productBuscado,
+        });
+      });
+
+      /* Si esta el producto en el carrito y quiero sacar */
+    } else if (productBuscado && query === "del") {
+      if (body.stock > 0) {
+        body.stock = body.stock - 1;
+
+        await carrito.updateOne(
+          { _id: id },
+          { $set: { stock: body.stock } }, // Usar el operador $set
+          { new: true }
+        ).then(() => {
+          res.json({
+            mensaje: `El producto: ${productBuscado.nombre} fue actualizado`,
+            product: productBuscado,
+          });
+        });
+      } else {
+        res.status(400).json({ mensaje: "El producto ya tiene stock 0" });
+      }
+    } else {
+      res.status(400).json({ mensaje: "Ocurrió un error" });
     }
-
-    // Obtener los datos actualizados del producto del cuerpo de la solicitud
-    const updatedUserData = req.body;
-
-    // Realizar la actualización del producto en la base de datos
-    await collection.updateOne({ _id: new ObjectId(productId) }, { $set: updatedUserData });
-
-    res.json({ message: 'producto actualizado con éxito' });
   } catch (error) {
-    console.error('Error al actualizar el producto:', error);
-    res.status(500).json({ error: 'Hubo un error al actualizar el producto' });
-  } finally {
-    client.close();
+    console.log(error);
   }
 });
 

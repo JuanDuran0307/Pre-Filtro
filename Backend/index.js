@@ -3,9 +3,17 @@ const {MongoClient} = require('mongodb');
 require('dotenv').config();
 const routerMain = require('./routes/routes.js');
 const cors = require ('cors');
-
 const app = express();
-app.use(cors());
+
+
+
+const swaggerUi = require('swagger-ui-express');
+const specs = require('./swagger/config.js')
+app.use('/shop-swagger', swaggerUi.serve, swaggerUi.setup(specs));
+
+
+
+  app.use(cors());
 
 
 

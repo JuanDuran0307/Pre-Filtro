@@ -42,45 +42,31 @@ export const CartProvider = ({ children }) => {
 
     await axios.post("http://localhost:3763/shop/add-productos-carrito", {nombre, imagen, precio });
 
-    const updatedProducts = products.map((p) =>
-    p.nombre === nombre ? { ...p, inCart: true } : p
-  );
-
-  // Actualiza el estado local de products
-  setProducts(updatedProducts);
-
   getProducts();
   getProductsCart();
 };
 
 
-  
 
 
 
 
-const editItemToCart = async (id, query,stock) => {
-    if (query === "del" && stock === 1) {
-      await axios
-        .delete(`http://localhost:3763/shop/delProductos/${id}`)
-        .then(({ data }) => console.log(data));
-        const updatedProducts = products.map((p) =>
-        p._id === id ? { ...p, inCart: false } : p
-  );
-    // Actualiza el estado local de products
-    setProducts(updatedProducts);
-    } else {
-      await axios
-        .put(`http://localhost:3763/shop/updateProductoCarrito/${id}?query=${query}`, {
-         stock,
-        })
-        .then(({ data }) => console.log(data));
-    }
+const editItemToCart = async (id, query, stock) => {
+  if (query === "del" && stock === 1) {
+    await axios
+      .delete(`http://localhost:3763/shop/delProductos/${id}`)
+      .then(({ data }) => console.log(data));
+  } else {
+    await axios
+      .put(`http://localhost:3763/shop/updateProductoCarrito/${id}?query=${query}`, {
+        stock,
+      })
+      .then(({ data }) => console.log(data));
+  }
 
-    getProducts();
-    getProductsCart();
-  };
-
+  getProducts();
+  getProductsCart();
+};
   return (
     /* Envolvemos el children con el provider y le pasamos un objeto con las propiedades que necesitamos por value */
     <CartContext.Provider
